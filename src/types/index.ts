@@ -1,13 +1,16 @@
 export interface Tour {
   id: string;
   name: string;
-  type: 'station' | 'workshop' | 'tunnel';
-  coordinates: {
+  location: string;
+  type: 'station' | 'workshop' | 'tunnel' | 'depot';
+  coordinates?: {
     x: number;
     y: number;
   };
-  equipment: string[];
-  status: 'active' | 'maintenance' | 'offline';
+  equipment?: string[];
+  status: 'active' | 'maintenance' | 'offline' | 'inspection';
+  lastInspection: string;
+  priority: 'low' | 'medium' | 'high' | 'critical';
 }
 
 export interface Ticket {
@@ -50,4 +53,4 @@ export interface Annotation {
   thickness: number;
 }
 
-export type PageType = 'dashboard' | 'live-session' | 'reports' | 'settings';
+export type PageType = 'dashboard' | 'live-session' | 'reports' | 'settings' | 'pricing';

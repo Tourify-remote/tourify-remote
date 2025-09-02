@@ -1,43 +1,58 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import { Plus, MapPin, Play, Filter } from 'lucide-react'
 import { Tour, Ticket } from '../types'
+import { useOrganization } from '../auth/OrganizationProvider'
+import { supabase } from '../lib/supabase'
 
 interface DashboardProps {
   onStartSession: (_tour: Tour) => void
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ onStartSession }) => {
+  const { currentOrg } = useOrganization()
   const [selectedSite, setSelectedSite] = useState<Tour | null>(null)
   const [ticketFilter, setTicketFilter] = useState<'all' | 'open' | 'in-progress' | 'closed'>('all')
   const [locationFilter] = useState<string>('all')
+  const [tours, setTours] = useState<Tour[]>([])
+  const [loading, setLoading] = useState(true)
 
-  // Mock data for tours/sites
-  const tours: Tour[] = [
-    {
-      id: '1',
-      name: 'Estación Baquedano',
-      type: 'station',
-      coordinates: { x: 45, y: 30 },
-      equipment: ['Escaleras mecánicas', 'Torniquetes', 'Sistema de ventilación'],
-      status: 'active'
-    },
-    {
-      id: '2',
-      name: 'Taller Neptuno',
-      type: 'workshop',
-      coordinates: { x: 25, y: 60 },
-      equipment: ['Grúa principal', 'Banco de pruebas', 'Sistema hidráulico'],
-      status: 'maintenance'
-    },
-    {
-      id: '3',
-      name: 'Túnel L1 - Sector 5',
-      type: 'tunnel',
-      coordinates: { x: 70, y: 45 },
-      equipment: ['Señalización', 'Cableado eléctrico', 'Sistema de drenaje'],
-      status: 'active'
+  useEffect(() => {
+    if (currentOrg) {
+      loadSites()
     }
-  ]
+  }, [currentOrg])
+
+  const loadSites = async () => {
+    if (!currentOrg) return
+
+    try {
+      const { data, error } = await supabase
+        .from('sites')
+        .select('*')
+        .eq('org_id', currentOrg.id)
+
+      if (error) throw error
+
+      // Convert sites to tours format
+      const convertedTours: Tour[] = data.map(site => ({
+        id: site.id,
+        name: site.name,
+        location: site.location || 'Unknown',
+        type: (site.site_type as any) || 'station',
+        coordinates: { x: Math.random() * 80 + 10, y: Math.random() * 80 + 10 }, // Random for demo
+        equipment: ['Sistema principal', 'Equipos auxiliares'], // Mock data
+        status: (site.status as any) || 'active',
+        lastInspection: site.created_at,
+        priority: 'medium' as const
+      }))
+
+      setTours(convertedTours)
+    } catch (error) {
+      console.error('Error loading sites:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   // Mock data for tickets
   const tickets: Ticket[] = [
@@ -92,6 +107,14 @@ const Dashboard: React.FC<DashboardProps> = ({ onStartSession }) => {
     }
   }
 
+  if (loading) {
+    return (
+      <div className="p-6 h-full flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-metro-blue"></div>
+      </div>
+    )
+  }
+
   return (
     <div className="p-6 h-full overflow-auto">
       <div className="mb-6">
@@ -130,8 +153,8 @@ const Dashboard: React.FC<DashboardProps> = ({ onStartSession }) => {
                   key={tour.id}
                   className="absolute transform -translate-x-1/2 -translate-y-1/2 cursor-pointer"
                   style={{
-                    left: `${tour.coordinates.x}%`,
-                    top: `${tour.coordinates.y}%`
+                    left: `${tour.coordinates?.x || 50}%`,
+                    top: `${tour.coordinates?.y || 50}%`
                   }}
                   onClick={() => setSelectedSite(tour)}
                 >
@@ -167,9 +190,9 @@ const Dashboard: React.FC<DashboardProps> = ({ onStartSession }) => {
                 <div className="mb-3">
                   <p className="text-sm font-medium text-gray-700 mb-1">Equipos:</p>
                   <ul className="text-xs text-gray-600">
-                    {selectedSite.equipment.map((eq, idx) => (
+                    {selectedSite.equipment?.map((eq, idx) => (
                       <li key={idx}>• {eq}</li>
-                    ))}
+                    )) || <li>No equipment listed</li>}
                   </ul>
                 </div>
                 <button
