@@ -133,6 +133,17 @@ export const OrganizationProvider: React.FC<OrganizationProviderProps> = ({ chil
 
     if (membershipError) throw membershipError
 
+    // Create free subscription
+    const { error: subscriptionError } = await supabase
+      .from('subscriptions')
+      .insert({
+        org_id: orgData.id,
+        status: 'active',
+        plan: 'free'
+      })
+
+    if (subscriptionError) throw subscriptionError
+
     // Update local state
     setOrganizations(prev => [...prev, orgData])
     setMemberships(prev => [...prev, { user_id: user.id, org_id: orgData.id, role: 'owner' }])

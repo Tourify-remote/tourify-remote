@@ -60,7 +60,7 @@ export const Signup: React.FC = () => {
               Check your email
             </h2>
             <p className="mt-2 text-sm text-gray-600">
-              We've sent you a confirmation link at {email}
+              We&apos;ve sent you a confirmation link at {email}
             </p>
             <Link
               to="/login"

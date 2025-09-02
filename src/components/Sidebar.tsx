@@ -1,8 +1,8 @@
 import React from 'react'
-import {
-  LayoutDashboard,
-  Video,
-  FileText,
+import { 
+  LayoutDashboard, 
+  Video, 
+  FileText, 
   Settings,
   ChevronLeft,
   ChevronRight,
@@ -25,12 +25,12 @@ const Sidebar: React.FC<SidebarProps> = ({ activePage, onPageChange }) => {
   const [isCollapsed, setIsCollapsed] = React.useState(false)
   const { user, signOut } = useAuth()
   const { currentOrg, organizations, switchOrganization } = useOrganization()
-  const { isActive, openCustomerPortal } = useSubscription(currentOrg?.id || null)
+  const { isPro, openCustomerPortal } = useSubscription(currentOrg?.id || null)
 
   const menuItems = [
     { id: 'dashboard' as PageType, label: 'Panel', icon: LayoutDashboard },
-    { id: 'live-session' as PageType, label: 'Sesión en Vivo', icon: Video, requiresSubscription: true },
-    { id: 'reports' as PageType, label: 'Reportes', icon: FileText, requiresSubscription: true },
+    { id: 'live-session' as PageType, label: 'Sesión en Vivo', icon: Video, requiresPro: true },
+    { id: 'reports' as PageType, label: 'Reportes', icon: FileText, requiresPro: true },
     { id: 'settings' as PageType, label: 'Configuración', icon: Settings },
   ]
 
@@ -56,8 +56,8 @@ const Sidebar: React.FC<SidebarProps> = ({ activePage, onPageChange }) => {
         {menuItems.map((item) => {
           const Icon = item.icon
           const isActiveItem = activePage === item.id
-          const isDisabled = item.requiresSubscription && !isActive
-
+          const isDisabled = item.requiresPro && !isPro
+          
           return (
             <button
               key={item.id}
@@ -66,8 +66,8 @@ const Sidebar: React.FC<SidebarProps> = ({ activePage, onPageChange }) => {
               className={`w-full flex items-center px-4 py-3 text-left transition-colors ${
                 isActiveItem ? 'bg-metro-light-blue border-r-4 border-metro-orange' : ''
               } ${
-                isDisabled
-                  ? 'opacity-50 cursor-not-allowed'
+                isDisabled 
+                  ? 'opacity-50 cursor-not-allowed' 
                   : 'hover:bg-metro-light-blue'
               }`}
             >
@@ -81,15 +81,15 @@ const Sidebar: React.FC<SidebarProps> = ({ activePage, onPageChange }) => {
             </button>
           )
         })}
-
+        
         {/* Pricing/Billing */}
         <button
-          onClick={() => isActive ? openCustomerPortal() : onPageChange('pricing')}
+          onClick={() => isPro ? openCustomerPortal() : onPageChange('pricing')}
           className="w-full flex items-center px-4 py-3 text-left hover:bg-metro-light-blue transition-colors"
         >
           <CreditCard size={20} />
           {!isCollapsed && (
-            <span className="ml-3">{isActive ? 'Billing' : 'Upgrade'}</span>
+            <span className="ml-3">{isPro ? 'Billing' : 'Upgrade'}</span>
           )}
         </button>
       </nav>
@@ -112,7 +112,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activePage, onPageChange }) => {
               </select>
             </div>
           )}
-
+          
           {/* User Info */}
           <div className="border-t border-metro-light-blue pt-4">
             <div className="flex items-center mb-2">
@@ -135,7 +135,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activePage, onPageChange }) => {
           </div>
         </div>
       )}
-
+      
       {!isCollapsed && (
         <div className="absolute bottom-4 left-4 right-4">
           <div className="text-xs text-gray-300">

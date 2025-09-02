@@ -1,29 +1,23 @@
 # Tourify Remote
 
-A production-ready SaaS application for remote worksite supervision for the Santiago Metro. The application provides a collaborative, real-time environment that combines 360° panoramic imagery, live video communication, and interactive annotation tools with multi-tenant architecture, authentication, and billing.
+A specialized web application designed to facilitate remote worksite supervision for the Santiago Metro. The application provides a collaborative, real-time environment that combines 360° panoramic imagery, live video communication, and interactive annotation tools.
 
 ## Features
 
-- **Multi-Tenant Architecture**: Organization-based access with Row Level Security
-- **Authentication & Authorization**: Supabase Auth with email/password and magic links
-- **Subscription Management**: Stripe integration with Pro and Enterprise plans
 - **Interactive Site Map**: Visual representation of Santiago Metro network with real-time site status
 - **360° Panoramic Viewer**: Immersive view of worksites using Three.js
 - **Live Video Communication**: WebRTC-based video calls between experts and field technicians
 - **Interactive Annotations**: Draw directly onto 360° views with various tools (pen, circle, arrow)
-- **AI-Powered Reporting**: Pluggable AI service supporting multiple providers (Gemini, OpenAI, Anthropic, Groq, OpenRouter)
+- **AI-Powered Reporting**: Automatic session summaries using secure server-side AI proxy
 - **Support Ticket Management**: Track and filter maintenance tickets by status and location
 
 ## Tech Stack
 
-- **Frontend**: React 18 with TypeScript, React Router
+- **Frontend**: React 18 with TypeScript
 - **Styling**: Tailwind CSS with Metro de Santiago brand colors
 - **3D/360° Rendering**: Three.js
-- **Backend**: Netlify Functions (serverless)
-- **Database**: Supabase (PostgreSQL with RLS)
-- **Authentication**: Supabase Auth
-- **Payments**: Stripe Checkout & Customer Portal
-- **AI Integration**: Multi-provider support via Netlify Functions
+- **Backend**: Netlify Functions (serverless AI proxy)
+- **AI Integration**: Secure server-side Gemini API proxy
 - **Icons**: Lucide React
 - **Build Tool**: Vite
 - **Deployment**: Netlify
@@ -35,9 +29,7 @@ A production-ready SaaS application for remote worksite supervision for the Sant
 
 - Node.js (v18 or higher)
 - npm or yarn
-- Supabase project
-- Stripe account (for billing)
-- AI provider API keys (Gemini, OpenAI, etc.)
+- Google Gemini API key (for AI reporting features)
 
 ### Local Development Setup
 
@@ -58,24 +50,19 @@ A production-ready SaaS application for remote worksite supervision for the Sant
    ```
    Edit `.env.local` with your actual values:
    ```
-   VITE_SUPABASE_URL=your_supabase_project_url
-   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
    VITE_GEMINI_API_KEY=your_gemini_api_key
-   VITE_APP_URL=http://localhost:8888
    ```
 
-4. Set up Supabase database:
-   - Create a new Supabase project
-   - Run the SQL migration from `supabase-migration.sql` in the SQL editor
-   - Configure RLS policies and authentication
-
-5. Start the development server with Netlify Functions:
+4. Start the development server:
+   ```bash
+   npm run dev
+   ```
+   For testing with AI proxy functions:
    ```bash
    netlify dev
    ```
-   This runs both the Vite dev server and Netlify Functions locally.
 
-6. Open your browser and navigate to `http://localhost:8888`
+5. Open your browser and navigate to `http://localhost:5173` (or `http://localhost:8888` with netlify dev)
 
 ### Production Deployment
 

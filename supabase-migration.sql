@@ -23,15 +23,12 @@ create table if not exists memberships (
   primary key (user_id, org_id)
 );
 
--- Create subscriptions table
+-- Create subscriptions table (simplified for mock Stripe)
 create table if not exists subscriptions (
   org_id uuid primary key references organizations(id) on delete cascade,
-  status text not null,              -- 'active' | 'trialing' | 'past_due' | 'canceled'
-  stripe_customer_id text,
-  stripe_subscription_id text,
-  plan text default 'pro',
-  current_period_end timestamptz,
-  updated_at timestamptz default now()
+  status text not null default 'active',              -- 'active' | 'canceled'
+  plan text default 'free',                           -- 'free' | 'pro'
+  created_at timestamptz default now()
 );
 
 -- Create sites table (your domain data)
@@ -45,27 +42,12 @@ create table if not exists sites (
   created_at timestamptz default now()
 );
 
--- Create sessions table for tracking maintenance sessions
-create table if not exists maintenance_sessions (
-  id uuid primary key default gen_random_uuid(),
-  org_id uuid not null references organizations(id) on delete cascade,
-  site_id uuid references sites(id) on delete cascade,
-  expert_name text,
-  technician_name text,
-  duration_minutes integer,
-  summary text,
-  annotations jsonb default '[]'::jsonb,
-  status text default 'completed',
-  created_at timestamptz default now()
-);
-
 -- Enable Row Level Security
 alter table organizations enable row level security;
 alter table profiles enable row level security;
 alter table memberships enable row level security;
 alter table subscriptions enable row level security;
 alter table sites enable row level security;
-alter table maintenance_sessions enable row level security;
 
 -- Profiles policy - users can only see their own profile
 create policy "profiles are self" on profiles
@@ -115,7 +97,7 @@ create policy "memberships insertable by owner" on memberships
       where m.org_id = org_id 
       and m.user_id = auth.uid() 
       and m.role = 'owner'
-    ) 
+    ) or auth.uid() = user_id -- Allow self-insertion for first org
   );
 
 -- Subscriptions policies
@@ -166,34 +148,6 @@ create policy "sites update by member" on sites
     ) 
   );
 
--- Maintenance sessions policies
-create policy "sessions by org" on maintenance_sessions
-  for select using ( 
-    exists (
-      select 1 from memberships m 
-      where m.org_id = maintenance_sessions.org_id 
-      and m.user_id = auth.uid()
-    ) 
-  );
-
-create policy "sessions insert by member" on maintenance_sessions
-  for insert with check ( 
-    exists (
-      select 1 from memberships m 
-      where m.org_id = org_id 
-      and m.user_id = auth.uid()
-    ) 
-  );
-
-create policy "sessions update by member" on maintenance_sessions
-  for update using ( 
-    exists (
-      select 1 from memberships m 
-      where m.org_id = maintenance_sessions.org_id 
-      and m.user_id = auth.uid()
-    ) 
-  );
-
 -- Function to handle new user signup
 create or replace function handle_new_user()
 returns trigger as $$
@@ -223,3 +177,8 @@ insert into sites (id, org_id, name, site_type, location, status) values
   ('660e8400-e29b-41d4-a716-446655440002', '550e8400-e29b-41d4-a716-446655440000', 'Estación Los Héroes', 'station', 'Línea 2', 'active'),
   ('660e8400-e29b-41d4-a716-446655440003', '550e8400-e29b-41d4-a716-446655440000', 'Patio de Maniobras', 'depot', 'Línea 4', 'inspection')
 on conflict (id) do nothing;
+
+insert into subscriptions (org_id, status, plan) values 
+  ('550e8400-e29b-41d4-a716-446655440000', 'active', 'pro'),
+  ('550e8400-e29b-41d4-a716-446655440001', 'active', 'free')
+on conflict (org_id) do nothing;

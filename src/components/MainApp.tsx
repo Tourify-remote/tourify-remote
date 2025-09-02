@@ -13,7 +13,7 @@ export const MainApp: React.FC = () => {
   const params = useParams()
   const navigate = useNavigate()
   const { currentOrg, loading: orgLoading } = useOrganization()
-  const { isActive, loading: subLoading } = useSubscription(currentOrg?.id || null)
+  const { isPro, loading: subLoading } = useSubscription(currentOrg?.id || null)
   
   const [selectedTour, setSelectedTour] = useState<Tour | null>(null)
 
@@ -71,9 +71,9 @@ export const MainApp: React.FC = () => {
     )
   }
 
-  // Show subscription required message for non-active subscriptions on protected features
+  // Show subscription required message for non-pro features
   const requiresSubscription = activePage === 'live-session' || activePage === 'reports'
-  if (requiresSubscription && !isActive) {
+  if (requiresSubscription && !isPro) {
     return (
       <div className="flex h-screen bg-gray-100">
         <Sidebar 
@@ -83,10 +83,10 @@ export const MainApp: React.FC = () => {
         <main className="flex-1 overflow-hidden flex items-center justify-center">
           <div className="text-center">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">
-              Subscription Required
+              Pro Subscription Required
             </h2>
             <p className="text-gray-600 mb-6">
-              This feature requires an active subscription. Please upgrade your plan to continue.
+              This feature requires a Pro subscription. Please upgrade your plan to continue.
             </p>
             <button
               onClick={() => navigate('/pricing')}
@@ -114,6 +114,8 @@ export const MainApp: React.FC = () => {
             name: 'Site Session',
             location: 'Unknown',
             type: 'station' as const,
+            coordinates: { x: 50, y: 50 },
+            equipment: ['Sistema principal'],
             status: 'active' as const,
             lastInspection: new Date().toISOString(),
             priority: 'medium' as const

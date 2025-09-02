@@ -2,13 +2,13 @@ export interface Tour {
   id: string;
   name: string;
   location: string;
-  type: 'station' | 'workshop' | 'tunnel' | 'depot';
-  coordinates?: {
+  type: 'station' | 'workshop' | 'tunnel';
+  coordinates: {
     x: number;
     y: number;
   };
-  equipment?: string[];
-  status: 'active' | 'maintenance' | 'offline' | 'inspection';
+  equipment: string[];
+  status: 'active' | 'maintenance' | 'offline';
   lastInspection: string;
   priority: 'low' | 'medium' | 'high' | 'critical';
 }

@@ -4,11 +4,8 @@ import { supabase } from '../lib/supabase'
 interface Subscription {
   org_id: string
   status: string
-  stripe_customer_id: string | null
-  stripe_subscription_id: string | null
   plan: string | null
-  current_period_end: string | null
-  updated_at: string
+  created_at: string
 }
 
 export const useSubscription = (orgId: string | null) => {
@@ -76,26 +73,33 @@ export const useSubscription = (orgId: string | null) => {
   const isActive = subscription?.status === 'active' || subscription?.status === 'trialing'
   const isPastDue = subscription?.status === 'past_due'
   const isCanceled = subscription?.status === 'canceled' || !subscription
+  const isPro = subscription?.plan === 'pro'
+  const isFree = subscription?.plan === 'free' || !subscription
 
+  // Mock Stripe portal - just show an alert for now
   const openCustomerPortal = async () => {
+    alert('Stripe Customer Portal would open here. This is a mock implementation.')
+  }
+
+  // Mock upgrade function
+  const upgradeToPro = async () => {
     if (!orgId) return
 
     try {
-      const response = await fetch('/api/create-portal', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      const { error } = await supabase
+        .from('subscriptions')
+        .upsert({
           org_id: orgId,
-          return_url: window.location.origin + '/dashboard'
+          status: 'active',
+          plan: 'pro'
         })
-      })
 
-      const data = await response.json()
-      if (data.url) {
-        window.location.href = data.url
-      }
+      if (error) throw error
+      
+      alert('Successfully upgraded to Pro! (Mock implementation)')
     } catch (error) {
-      console.error('Error opening customer portal:', error)
+      console.error('Error upgrading subscription:', error)
+      alert('Error upgrading subscription')
     }
   }
 
@@ -106,6 +110,9 @@ export const useSubscription = (orgId: string | null) => {
     isActive,
     isPastDue,
     isCanceled,
-    openCustomerPortal
+    isPro,
+    isFree,
+    openCustomerPortal,
+    upgradeToPro
   }
 }

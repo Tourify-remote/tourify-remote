@@ -63,29 +63,20 @@ export type Database = {
         Row: {
           org_id: string
           status: string
-          stripe_customer_id: string | null
-          stripe_subscription_id: string | null
           plan: string | null
-          current_period_end: string | null
-          updated_at: string
+          created_at: string
         }
         Insert: {
           org_id: string
           status: string
-          stripe_customer_id?: string | null
-          stripe_subscription_id?: string | null
           plan?: string | null
-          current_period_end?: string | null
-          updated_at?: string
+          created_at?: string
         }
         Update: {
           org_id?: string
           status?: string
-          stripe_customer_id?: string | null
-          stripe_subscription_id?: string | null
           plan?: string | null
-          current_period_end?: string | null
-          updated_at?: string
+          created_at?: string
         }
       }
       sites: {
@@ -93,18 +84,27 @@ export type Database = {
           id: string
           org_id: string
           name: string
+          site_type: string | null
+          location: string | null
+          status: string | null
           created_at: string
         }
         Insert: {
           id?: string
           org_id: string
           name: string
+          site_type?: string | null
+          location?: string | null
+          status?: string | null
           created_at?: string
         }
         Update: {
           id?: string
           org_id?: string
           name?: string
+          site_type?: string | null
+          location?: string | null
+          status?: string | null
           created_at?: string
         }
       }

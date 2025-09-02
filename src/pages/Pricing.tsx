@@ -1,39 +1,17 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { useAuth } from '../auth/AuthProvider'
 import { useOrganization } from '../auth/OrganizationProvider'
+import { useSubscription } from '../hooks/useSubscription'
 import { Check } from 'lucide-react'
 
 export const Pricing: React.FC = () => {
   const { user } = useAuth()
   const { currentOrg } = useOrganization()
-  const [loading, setLoading] = useState(false)
+  const { upgradeToPro, isPro, isFree } = useSubscription(currentOrg?.id || null)
 
-  const handleSubscribe = async (priceId: string) => {
+  const handleUpgrade = async () => {
     if (!user || !currentOrg) return
-
-    setLoading(true)
-    try {
-      const response = await fetch('/api/create-checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          org_id: currentOrg.id,
-          price_id: priceId,
-          success_url: `${window.location.origin}/dashboard?success=true`,
-          cancel_url: `${window.location.origin}/pricing`,
-          customer_email: user.email
-        })
-      })
-
-      const data = await response.json()
-      if (data.url) {
-        window.location.href = data.url
-      }
-    } catch (error) {
-      console.error('Error creating checkout:', error)
-    } finally {
-      setLoading(false)
-    }
+    await upgradeToPro()
   }
 
   return (
@@ -48,7 +26,7 @@ export const Pricing: React.FC = () => {
           </p>
         </div>
 
-        <div className="mt-12 space-y-4 sm:mt-16 sm:space-y-0 sm:grid sm:grid-cols-2 sm:gap-6 lg:max-w-4xl lg:mx-auto xl:max-w-none xl:mx-0 xl:grid-cols-3">
+        <div className="mt-12 space-y-4 sm:mt-16 sm:space-y-0 sm:grid sm:grid-cols-2 sm:gap-6 lg:max-w-4xl lg:mx-auto">
           {/* Free Plan */}
           <div className="border border-gray-200 rounded-lg shadow-sm divide-y divide-gray-200">
             <div className="p-6">
@@ -64,12 +42,12 @@ export const Pricing: React.FC = () => {
                 disabled
                 className="mt-8 block w-full bg-gray-300 border border-gray-300 rounded-md py-2 text-sm font-semibold text-gray-500 text-center cursor-not-allowed"
               >
-                Current Plan
+                {isFree ? 'Current Plan' : 'Free Plan'}
               </button>
             </div>
             <div className="pt-6 pb-8 px-6">
               <h4 className="text-xs font-medium text-gray-900 tracking-wide uppercase">
-                What's included
+                What&apos;s included
               </h4>
               <ul className="mt-6 space-y-4">
                 <li className="flex space-x-3">
@@ -109,11 +87,11 @@ export const Pricing: React.FC = () => {
                 <span className="text-base font-medium text-gray-500">/month</span>
               </p>
               <button
-                onClick={() => handleSubscribe(import.meta.env.VITE_PRICE_MONTHLY_ID || 'price_1234')}
-                disabled={loading}
-                className="mt-8 block w-full bg-metro-blue border border-metro-blue rounded-md py-2 text-sm font-semibold text-white text-center hover:bg-metro-light-blue disabled:opacity-50"
+                onClick={handleUpgrade}
+                disabled={isPro}
+                className="mt-8 block w-full bg-metro-blue border border-metro-blue rounded-md py-2 text-sm font-semibold text-white text-center hover:bg-metro-light-blue disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? 'Processing...' : 'Start Pro Plan'}
+                {isPro ? 'Current Plan' : 'Upgrade to Pro (Mock)'}
               </button>
             </div>
             <div className="pt-6 pb-8 px-6">
@@ -144,52 +122,6 @@ export const Pricing: React.FC = () => {
                 <li className="flex space-x-3">
                   <Check className="flex-shrink-0 h-5 w-5 text-green-500" />
                   <span className="text-sm text-gray-500">Priority support</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          {/* Enterprise Plan */}
-          <div className="border border-gray-200 rounded-lg shadow-sm divide-y divide-gray-200">
-            <div className="p-6">
-              <h3 className="text-lg leading-6 font-medium text-gray-900">Enterprise</h3>
-              <p className="mt-4 text-sm text-gray-500">
-                Custom solutions for large organizations
-              </p>
-              <p className="mt-8">
-                <span className="text-4xl font-extrabold text-gray-900">Custom</span>
-              </p>
-              <button
-                onClick={() => window.location.href = 'mailto:sales@tourify.com'}
-                className="mt-8 block w-full bg-white border border-metro-blue rounded-md py-2 text-sm font-semibold text-metro-blue text-center hover:bg-gray-50"
-              >
-                Contact Sales
-              </button>
-            </div>
-            <div className="pt-6 pb-8 px-6">
-              <h4 className="text-xs font-medium text-gray-900 tracking-wide uppercase">
-                Everything in Pro, plus
-              </h4>
-              <ul className="mt-6 space-y-4">
-                <li className="flex space-x-3">
-                  <Check className="flex-shrink-0 h-5 w-5 text-green-500" />
-                  <span className="text-sm text-gray-500">Custom integrations</span>
-                </li>
-                <li className="flex space-x-3">
-                  <Check className="flex-shrink-0 h-5 w-5 text-green-500" />
-                  <span className="text-sm text-gray-500">Advanced analytics</span>
-                </li>
-                <li className="flex space-x-3">
-                  <Check className="flex-shrink-0 h-5 w-5 text-green-500" />
-                  <span className="text-sm text-gray-500">Dedicated support</span>
-                </li>
-                <li className="flex space-x-3">
-                  <Check className="flex-shrink-0 h-5 w-5 text-green-500" />
-                  <span className="text-sm text-gray-500">SLA guarantees</span>
-                </li>
-                <li className="flex space-x-3">
-                  <Check className="flex-shrink-0 h-5 w-5 text-green-500" />
-                  <span className="text-sm text-gray-500">On-premise deployment</span>
                 </li>
               </ul>
             </div>

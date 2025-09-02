@@ -19,8 +19,48 @@ const Dashboard: React.FC<DashboardProps> = ({ onStartSession }) => {
   useEffect(() => {
     if (currentOrg) {
       loadSites()
+    } else {
+      // Show mock data if no org
+      setTours(mockTours)
+      setLoading(false)
     }
   }, [currentOrg])
+
+  const mockTours: Tour[] = [
+    {
+      id: '1',
+      name: 'Estación Baquedano',
+      location: 'Línea 1',
+      type: 'station',
+      coordinates: { x: 45, y: 30 },
+      equipment: ['Escaleras mecánicas', 'Torniquetes', 'Sistema de ventilación'],
+      status: 'active',
+      lastInspection: new Date().toISOString(),
+      priority: 'medium'
+    },
+    {
+      id: '2',
+      name: 'Taller Neptuno',
+      location: 'Línea 2',
+      type: 'workshop',
+      coordinates: { x: 25, y: 60 },
+      equipment: ['Grúa principal', 'Banco de pruebas', 'Sistema hidráulico'],
+      status: 'maintenance',
+      lastInspection: new Date().toISOString(),
+      priority: 'high'
+    },
+    {
+      id: '3',
+      name: 'Túnel L1 - Sector 5',
+      location: 'Línea 1',
+      type: 'tunnel',
+      coordinates: { x: 70, y: 45 },
+      equipment: ['Señalización', 'Cableado eléctrico', 'Sistema de drenaje'],
+      status: 'active',
+      lastInspection: new Date().toISOString(),
+      priority: 'low'
+    }
+  ]
 
   const loadSites = async () => {
     if (!currentOrg) return
@@ -46,9 +86,10 @@ const Dashboard: React.FC<DashboardProps> = ({ onStartSession }) => {
         priority: 'medium' as const
       }))
 
-      setTours(convertedTours)
+      setTours(convertedTours.length > 0 ? convertedTours : mockTours)
     } catch (error) {
       console.error('Error loading sites:', error)
+      setTours(mockTours) // Fallback to mock data
     } finally {
       setLoading(false)
     }
@@ -153,8 +194,8 @@ const Dashboard: React.FC<DashboardProps> = ({ onStartSession }) => {
                   key={tour.id}
                   className="absolute transform -translate-x-1/2 -translate-y-1/2 cursor-pointer"
                   style={{
-                    left: `${tour.coordinates?.x || 50}%`,
-                    top: `${tour.coordinates?.y || 50}%`
+                    left: `${tour.coordinates.x}%`,
+                    top: `${tour.coordinates.y}%`
                   }}
                   onClick={() => setSelectedSite(tour)}
                 >
@@ -190,9 +231,9 @@ const Dashboard: React.FC<DashboardProps> = ({ onStartSession }) => {
                 <div className="mb-3">
                   <p className="text-sm font-medium text-gray-700 mb-1">Equipos:</p>
                   <ul className="text-xs text-gray-600">
-                    {selectedSite.equipment?.map((eq, idx) => (
+                    {selectedSite.equipment.map((eq, idx) => (
                       <li key={idx}>• {eq}</li>
-                    )) || <li>No equipment listed</li>}
+                    ))}
                   </ul>
                 </div>
                 <button
