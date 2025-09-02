@@ -53,4 +53,4 @@ export interface Annotation {
   thickness: number;
 }
 
-export type PageType = 'dashboard' | 'live-session' | 'reports' | 'settings' | 'pricing';
+export type PageType = 'dashboard' | 'live-session' | 'reports' | 'settings';

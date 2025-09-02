@@ -125,7 +125,7 @@ async function callOpenRouter(sessionData: string) {
   return await res.json()
 }
 
-const callers: Record<Provider, (s: string) => Promise<any>> = {
+const callers: Record<Provider, (_s: string) => Promise<any>> = {
   gemini: callGemini,
   openai: callOpenAI,
   anthropic: callAnthropic,

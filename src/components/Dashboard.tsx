@@ -1,32 +1,18 @@
-import React, { useState, useMemo, useEffect } from 'react'
+import React, { useState, useMemo } from 'react'
 import { Plus, MapPin, Play, Filter } from 'lucide-react'
 import { Tour, Ticket } from '../types'
-import { useOrganization } from '../auth/OrganizationProvider'
-import { supabase } from '../lib/supabase'
 
 interface DashboardProps {
   onStartSession: (_tour: Tour) => void
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ onStartSession }) => {
-  const { currentOrg } = useOrganization()
   const [selectedSite, setSelectedSite] = useState<Tour | null>(null)
   const [ticketFilter, setTicketFilter] = useState<'all' | 'open' | 'in-progress' | 'closed'>('all')
   const [locationFilter] = useState<string>('all')
-  const [tours, setTours] = useState<Tour[]>([])
-  const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    if (currentOrg) {
-      loadSites()
-    } else {
-      // Show mock data if no org
-      setTours(mockTours)
-      setLoading(false)
-    }
-  }, [currentOrg])
-
-  const mockTours: Tour[] = [
+  // Mock data for tours/sites
+  const tours: Tour[] = [
     {
       id: '1',
       name: 'Estación Baquedano',
@@ -61,39 +47,6 @@ const Dashboard: React.FC<DashboardProps> = ({ onStartSession }) => {
       priority: 'low'
     }
   ]
-
-  const loadSites = async () => {
-    if (!currentOrg) return
-
-    try {
-      const { data, error } = await supabase
-        .from('sites')
-        .select('*')
-        .eq('org_id', currentOrg.id)
-
-      if (error) throw error
-
-      // Convert sites to tours format
-      const convertedTours: Tour[] = data.map(site => ({
-        id: site.id,
-        name: site.name,
-        location: site.location || 'Unknown',
-        type: (site.site_type as any) || 'station',
-        coordinates: { x: Math.random() * 80 + 10, y: Math.random() * 80 + 10 }, // Random for demo
-        equipment: ['Sistema principal', 'Equipos auxiliares'], // Mock data
-        status: (site.status as any) || 'active',
-        lastInspection: site.created_at,
-        priority: 'medium' as const
-      }))
-
-      setTours(convertedTours.length > 0 ? convertedTours : mockTours)
-    } catch (error) {
-      console.error('Error loading sites:', error)
-      setTours(mockTours) // Fallback to mock data
-    } finally {
-      setLoading(false)
-    }
-  }
 
   // Mock data for tickets
   const tickets: Ticket[] = [
@@ -146,14 +99,6 @@ const Dashboard: React.FC<DashboardProps> = ({ onStartSession }) => {
       case 'low': return 'text-green-600'
       default: return 'text-gray-600'
     }
-  }
-
-  if (loading) {
-    return (
-      <div className="p-6 h-full flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-metro-blue"></div>
-      </div>
-    )
   }
 
   return (
